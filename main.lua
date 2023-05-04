@@ -7,6 +7,7 @@ local constants = require("constants")
 local air780 = require("air780_helper")
 local led_helper = require("led_helper")
 local utils = require("utils")
+local smtp = require("smtp")
 
 require("sysplus")
 require("notification_helper")
@@ -40,9 +41,11 @@ sys.taskInit(function()
     local ip_address = wlan.getIP()
     log.info(logging_tag, "无线网络连接成功，IP地址："..ip_address)
 
+    smtp.send_email("smtp.qq.com", 465, "Hello QQ")
+
     log.info(logging_tag, "等待时间同步")
     sys.waitUntil("NTP_UPDATE")
-    log.info(logging_tag, "时间同步完成")
+    log.info(logging_tag, "时间同步完成:", os.date())
 end)
 
 sys.taskInit(function ()
