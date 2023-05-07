@@ -41,7 +41,7 @@ sys.taskInit(function()
     local ip_address = wlan.getIP()
     log.info(logging_tag, "无线网络连接成功，IP地址："..ip_address)
 
-    smtp.send_email("smtp.qq.com", 465, "Hello QQ")
+    smtp.send_email(config.email, "Hello QQ")
 
     log.info(logging_tag, "等待时间同步")
     sys.waitUntil("NTP_UPDATE")
