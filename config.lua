@@ -46,4 +46,33 @@ config.notification_channel = {
     }
 }
 
+config.email = {
+    -- smtp.qq.com
+    smtp_addr = "",
+
+    -- 465 or 587
+    smtp_port = 465,
+
+    -- 邮箱账号,例如：123456789@qq.com
+    user = "",
+
+    -- 邮箱密码, 注意：QQ邮箱需要设置一个专用的第三方登录密码
+    pass = "",
+
+    -- 发送账号，留空则与user保持相同
+    from = "",
+
+    -- 显示名称
+    from_name = "",
+
+    -- 接收账号, 留空则与user保持相同（自己发给自己）
+    to = "",
+
+    -- 显示名称
+    to_name = "",
+
+    -- 主题
+    subject = "ESP32",
+}
+
 return config
