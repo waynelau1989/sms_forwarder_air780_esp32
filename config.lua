@@ -48,10 +48,12 @@ config.notification_channel = {
 
 config.email = {
     -- smtp.qq.com
-    smtp_addr = "",
+    smtp_addr = "smtp.qq.com",
 
-    -- 465 or 587
-    smtp_port = 465,
+    smtp_port = 587,
+
+    -- set to 0 for disable tls
+    smtp_tls_port = 465,
 
     -- 邮箱账号,例如：123456789@qq.com
     user = "",
@@ -63,7 +65,7 @@ config.email = {
     from = "",
 
     -- 显示名称
-    from_name = "",
+    from_name = "ESP32",
 
     -- 接收账号, 留空则与user保持相同（自己发给自己）
     to = "",
@@ -72,7 +74,7 @@ config.email = {
     to_name = "",
 
     -- 主题
-    subject = "ESP32",
+    subject = "10086",
 }
 
 return config
