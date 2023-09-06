@@ -47,6 +47,8 @@ config.notification_channel = {
 }
 
 config.email = {
+    enabled = false
+
     -- smtp.qq.com
     smtp_addr = "smtp.qq.com",
 

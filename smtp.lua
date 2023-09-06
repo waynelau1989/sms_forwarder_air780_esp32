@@ -203,7 +203,7 @@ local function smtp_envelope_header(smtp, header, address)
     return true
 end
 
-local function smtp_mail(smtp, config, msg)
+local function smtp_mail(smtp, config, subject, msg)
     if smtp_cmd(smtp, "DATA") ~= _M.SMTP_BEGIN_MAIL then
         return false
     end
@@ -222,7 +222,11 @@ local function smtp_mail(smtp, config, msg)
     smtp_puts(smtp, header)
 
     header = "Subject: "
-    header = header .. config.subject
+    if subject ~= "" then
+        header = header .. subject
+    else
+        header = header .. config.subject
+    end
     header = header .. ""
     smtp_puts(smtp, header)
 
@@ -285,7 +289,7 @@ local function smtp_send_email_task_cb(msg)
     log.error(LOG_TAG, "未处理消息:", msg[1], msg[2], msg[3], msg[4])
 end
 
-local function smtp_send_email(task_name, config, msg)
+local function smtp_send_email(task_name, config, subject, msg)
 
     local tls = false
     if config.smtp_tls_port > 0 then
@@ -296,16 +300,19 @@ local function smtp_send_email(task_name, config, msg)
 
     if not smtp_connect(smtp, config) then
         log.error(LOG_TAG, "smtp connect failed!")
+        _M.close(smtp)
         return false
     end
 
     if not smtp_ehlo(smtp) then
         log.error(LOG_TAG, "smtp ehlo failed!")
+        _M.close(smtp)
         return false
     end
 
     if not smtp_auth_login(smtp, config.user, config.pass) then
         log.error(LOG_TAG, "smtp auth failed!")
+        _M.close(smtp)
         return false
     end
 
@@ -319,25 +326,41 @@ local function smtp_send_email(task_name, config, msg)
 
     if not smtp_envelope_header(smtp, "MAIL FROM", config.user) then
         log.error(LOG_TAG, "smtp envelope [MAIL FROM] failed!")
+        _M.close(smtp)
         return false
     end
 
     if not smtp_envelope_header(smtp, "RCPT TO", config.user) then
         log.error(LOG_TAG, "smtp envelope [RCPT TO] failed!")
+        _M.close(smtp)
         return false
     end
 
-    if not smtp_mail(smtp, config, msg) then
+    if not smtp_mail(smtp, config, subject, msg) then
         log.error(LOG_TAG, "smtp mail failed!")
+        _M.close(smtp)
         return false
     end
+
+    _M.close(smtp)
 
     return true
 end
 
-local SMTP_TASK = "SmtpTask"
-function _M.send_email(config, msg)
-    sysplus.taskInitEx(smtp_send_email, SMTP_TASK, nil, SMTP_TASK, config, msg)
+local function smtp_send_email_task(task_name, config, subject, msg)
+    for i=0,2 do
+        if smtp_send_email(task_name, config, subject, msg) then
+            return
+        end
+        sys.wait(5000)
+    end
+end
+
+local smtp_task_num = 0
+function _M.send_email(config, subject, msg)
+    smtp_task_num = smtp_task_num + 1
+    local task_name = string.format("SmtpTask%d", smtp_task_num)
+    sysplus.taskInitEx(smtp_send_email_task, task_name, nil, task_name, config, subject, msg)
 end
 
 return _M

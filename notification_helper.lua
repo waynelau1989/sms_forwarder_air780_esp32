@@ -5,6 +5,7 @@ local sysplus = require("sysplus")
 local constants = require("constants")
 local config = require("config")
 local utils = require("utils")
+local smtp = require("smtp")
 
 -- https://tutorialspots.com/lua-urlencode-and-urldecode-5528.html
 local function urlencode(str)
@@ -192,6 +193,19 @@ local function pushplus(sender_number, content)
     log.info("notification_helper", "PushPlus通知发送完成")
 end
 
+local function email(sender_number, content)
+    if not config.email.enabled then
+        log.info("notification_helper", "email disabled!")
+        return
+    end
+
+    local subject = "【短信:"
+    subject = subject .. sender_number
+    subject = subject .. "】"
+
+    smtp.send_email(config.email, subject, content)
+end
+
 local notification_channels = {
     bark = bark,
     luatos_notification = luatos_notification,
@@ -206,6 +220,7 @@ local function call_notification_channels(sender_number, content)
             notification_channel(sender_number, content)
         end)
     end
+    email(sender_number, content)
 end
 
 sys.subscribe(constants.air780_message_topic_new_notification_request,
